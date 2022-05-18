@@ -1,5 +1,5 @@
 # BIOL0041-Final-Project
-Markdowns and Files for my BIOL0041 Final Project
+Markdowns and Files for my BIOL0041 Final Project.
 
 There is one R Markdown file that contains all code used in the project. I have attempted to break it down with subheadings.
 
