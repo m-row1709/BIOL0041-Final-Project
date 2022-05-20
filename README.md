@@ -7,4 +7,6 @@ The folder labelled 'Data' contains the initial data files provided for me by my
 Files that are produced throughout the code and are then immediately, or later, imported and used have not been included.
 The files and the markdown should be sufficient to recreate all work done. 
 
+Source code for the NCD statistic can be found in Barbara D. Bitarello's GitHub repository: https://github.com/bbitarello/NCD-Statistics
+
 Enjoy.
