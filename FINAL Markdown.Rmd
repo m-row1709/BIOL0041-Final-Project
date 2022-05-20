@@ -1,0 +1,870 @@
+---
+title: "Final Markdown"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## ZI Whole Population Data Cleaning
+
+```{bash}
+awk '{print NF}' 3R_r6_modified_dmel6_dsim2.vcf | sort -nu | tail -n 1
+#782. First 9 and last 4 are not individuals columns,
+
+touch column_names_row.txt
+sed '4q;d' 3R_r6_modified_dmel6_dsim2.vcf > column_names_row.txt
+#Extracts the column headers as one contiguous row
+
+touch column_names_list.txt
+for NUM in {1..782}
+do
+  awk 'NR==1 {print $'"$NUM"'}' column_names_row.txt >> column_names_list.txt
+done
+#Converts the column headers row to one single list
+
+sed '547q;d' column_names_list.txt #First ZI individual is the 547th column
+sed '743q;d' column_names_list.txt #Final ZI individual is the 743rd column
+
+touch cut_test.txt
+cut -f1-9,547-743,779-782 column_names_row.txt > cut_test.txt #Test for extracting only desired columns from VCF. Works!
+
+touch 3R_ZIonly_r6_modified_dmel6_dsim2.vcf
+cut -f1-9,547-743,779-782 3R_r6_modified_dmel6_dsim2.vcf > 3R_ZIonly_r6_modified_dmel6_dsim2.vcf
+```
+
+```{bash}
+#first 10 lines as test file
+touch 10_lines_test.txt
+head -13 3R_ZIonly_r6_modified_dmel6_dsim2.vcf | tail -10 > 10_lines_test.txt #Extracts first 10 lines (if you exclude metadata)
+
+awk '{print NF}' 10_lines_test.txt | sort -nu | tail -n 1 #210 columns in table. First 9 and last 4 are not individual data. 10-206 is genomic
+
+touch count_0.txt
+touch count_1.txt
+touch count_dot.txt
+echo "0_Count" > count_0.txt
+echo "1_Count" > count_1.txt
+echo "._Count" > count_dot.txt
+#Creates files for the counts information and places the header as the first line in each
+
+awk 'NR>1 {$1=$2=$3=$4=$5=$6=$7=$8=$9=$207=$208=$209=$210=""; print $0}' 10_lines_test.txt | awk -F\0 '{print NF-1}' >> count_0.txt
+awk 'NR>1 {$1=$2=$3=$4=$5=$6=$7=$8=$9=$207=$208=$209=$210=""; print $0}' 10_lines_test.txt | awk -F\1 '{print NF-1}' >> count_1.txt
+awk 'NR>1 {$1=$2=$3=$4=$5=$6=$7=$8=$9=$207=$208=$209=$210=""; print $0}' 10_lines_test.txt | awk -F\. '{print NF-1}' >> count_dot.txt
+#Counts number of 0s/1s/.s in each row (excluding non genomic score columns) and stores in the buffer txt file
+
+touch 10_lines_output.txt
+cat 10_lines_test.txt > 10_lines_output.txt #Creates output file
+
+touch final_10_lines_output.txt
+paste 10_lines_output.txt count_0.txt count_1.txt count_dot.txt > final_10_lines_output.txt #Final output file has results pasted together
+```
+
+```{bash}
+touch 3R_short_ZIonly_r6_modified_dmel6_dsim2.vcf
+awk 'NR == 4 {$1="CHROM" ; print ;}' 3R_ZIonly_r6_modified_dmel6_dsim2.vcf > 3R_short_ZIonly_r6_modified_dmel6_dsim2.vcf
+awk 'NR > 4 {print}' 3R_ZIonly_r6_modified_dmel6_dsim2.vcf >> 3R_short_ZIonly_r6_modified_dmel6_dsim2.vcf
+
+#Perform counts on whole file
+awk '{print NF}' 10_lines_test.txt | sort -nu | tail -n 1 #210 columns in table. First 9 and last 4 are not individual data. 10-206 is genomic
+
+touch count_0.txt
+touch count_1.txt
+touch count_dot.txt
+echo "0_Count" > count_0.txt
+echo "1_Count" > count_1.txt
+echo "._Count" > count_dot.txt
+#Creates files for the counts information and places the header as the first line in each
+
+awk 'NR>1 {$1=$2=$3=$4=$5=$6=$7=$8=$9=$207=$208=$209=$210=""; print $0}' 3R_short_ZIonly_r6_modified_dmel6_dsim2.vcf | awk -F\0 '{print NF-1}' >> count_0.txt
+awk 'NR>1 {$1=$2=$3=$4=$5=$6=$7=$8=$9=$207=$208=$209=$210=""; print $0}' 3R_short_ZIonly_r6_modified_dmel6_dsim2.vcf | awk -F\1 '{print NF-1}' >> count_1.txt
+awk 'NR>1 {$1=$2=$3=$4=$5=$6=$7=$8=$9=$207=$208=$209=$210=""; print $0}' 3R_short_ZIonly_r6_modified_dmel6_dsim2.vcf | awk -F\. '{print NF-1}' >> count_dot.txt
+#Counts number of 0s/1s/.s in each row (excluding non genomic score columns) and stores in the buffer txt file
+
+touch 3R_output_ZIonly_r6_modified_dmel6_dsim2.vcf
+cat 3R_short_ZIonly_r6_modified_dmel6_dsim2.vcf > 3R_output_ZIonly_r6_modified_dmel6_dsim2.vcf #Creates output file
+
+touch 3R_final_ZIonly_r6_modified_dmel6_dsim2.vcf
+paste 3R_output_ZIonly_r6_modified_dmel6_dsim2.vcf count_0.txt count_1.txt count_dot.txt > 3R_final_ZIonly_r6_modified_dmel6_dsim2.vcf #Final output file has results pasted together
+```
+
+## RAL Whole Population Data Cleaning
+
+```{bash}
+awk '{print NF}' 3R_r6_modified_dmel6_dsim2.vcf | sort -nu | tail -n 1
+#782. First 9 and last 4 are not individuals columns,
+
+touch column_names_row.txt
+sed '4q;d' 3R_r6_modified_dmel6_dsim2.vcf > column_names_row.txt
+#Extracts the column headers as one contiguous row
+
+touch column_names_list.txt
+for NUM in {1..782}
+do
+  awk 'NR==1 {print $'"$NUM"'}' column_names_row.txt >> column_names_list.txt
+done
+#Converts the column headers row to one single list
+
+sed '210q;d' column_names_list.txt #First RAL individual is the 210th column
+sed '414q;d' column_names_list.txt #Final RAL individual is the 414th column
+
+touch cut_test.txt
+cut -f1-9,210-414,779-782 column_names_row.txt > cut_test.txt #Test for extracting only desired columns from VCF. Works!
+
+touch 3R_RALonly_r6_modified_dmel6_dsim2.vcf
+cut -f1-9,210-414,779-782 3R_r6_modified_dmel6_dsim2.vcf > 3R_RALonly_r6_modified_dmel6_dsim2.vcf
+```
+
+```{bash}
+touch 10_lines_test.txt
+head -13 3R_RALonly_r6_modified_dmel6_dsim2.vcf | tail -10 > 10_lines_test.txt
+
+touch 3R_short_RALonly_r6_modified_dmel6_dsim2.vcf
+awk 'NR == 4 {$1="CHROM" ; print ;}' 3R_RALonly_r6_modified_dmel6_dsim2.vcf > 3R_short_RALonly_r6_modified_dmel6_dsim2.vcf
+awk 'NR > 4 {print}' 3R_RALonly_r6_modified_dmel6_dsim2.vcf >> 3R_short_RALonly_r6_modified_dmel6_dsim2.vcf
+
+#Perform counts on whole file
+awk '{print NF}' 10_lines_test.txt | sort -nu | tail -n 1 #218 columns in table. First 9 and last 4 are not individual data. 10-214 is genomic
+
+touch count_0.txt
+touch count_1.txt
+touch count_dot.txt
+echo "0_Count" > count_0.txt
+echo "1_Count" > count_1.txt
+echo "._Count" > count_dot.txt
+#Creates files for the counts information and places the header as the first line in each
+
+awk 'NR>1 {$1=$2=$3=$4=$5=$6=$7=$8=$9=$215=$216=$217=$218=""; print $0}' 3R_short_RALonly_r6_modified_dmel6_dsim2.vcf | awk -F\0 '{print NF-1}' >> count_0.txt
+awk 'NR>1 {$1=$2=$3=$4=$5=$6=$7=$8=$9=$215=$216=$217=$218=""; print $0}' 3R_short_RALonly_r6_modified_dmel6_dsim2.vcf | awk -F\1 '{print NF-1}' >> count_1.txt
+awk 'NR>1 {$1=$2=$3=$4=$5=$6=$7=$8=$9=$215=$216=$217=$218=""; print $0}' 3R_short_RALonly_r6_modified_dmel6_dsim2.vcf | awk -F\. '{print NF-1}' >> count_dot.txt
+#Counts number of 0s/1s/.s in each row (excluding non genomic score columns) and stores in the buffer txt file
+
+touch 3R_output_RALonly_r6_modified_dmel6_dsim2.vcf
+cat 3R_short_RALonly_r6_modified_dmel6_dsim2.vcf > 3R_output_RALonly_r6_modified_dmel6_dsim2.vcf #Creates output file
+
+touch 3R_final_RALonly_r6_modified_dmel6_dsim2.vcf
+paste 3R_output_RALonly_r6_modified_dmel6_dsim2.vcf count_0.txt count_1.txt count_dot.txt > 3R_final_RALonly_r6_modified_dmel6_dsim2.vcf #Final output file has results pasted together
+
+```
+
+## ZI Data Import (into R)
+
+```{r}
+memory.limit(24000)
+vcf <- read.table("3R_final_ZIonly_r6_modified_dmel6_dsim2.vcf", stringsAsFactors = FALSE, header = TRUE)
+
+datatable <- data.frame(vcf$CHROM, vcf$POS)
+colnames(datatable) <- c("CHROM", "POS")
+datatable$ID <- paste(datatable$CHROM, "|", datatable$POS, sep = "")
+datatable$REF <- vcf$REF
+datatable$ALT <- vcf$ALT
+datatable$AF1 <- vcf$X0_Count / (vcf$X0_Count + vcf$X1_Count)
+datatable$AF2 <- vcf$X1_Count / (vcf$X0_Count + vcf$X1_Count)
+datatable$AF3 <- NA
+datatable <- transform(datatable, MAF = pmin(AF1, AF2))
+colnames(datatable) <- c("CHR", "POS", "ID", "REF", "ALT", "AF1", "AF2", "AF3", "MAF")
+
+setwd("~/University/Year 4/BIOL0041/Data/NCD-statistics")
+inputfile <- datatable
+
+install.packages("doMC", repos="http://R-Forge.R-project.org")
+library(doMC)
+install.packages("foreach")
+library(foreach)
+setwd("C:/Users/miles/OneDrive - University College London/Documents/University/Year 4/BIOL0041/Data/NCD-statistics")
+source('scripts/preamble.R') #loads several packages
+install.packages("data.table")
+source('scripts/NCD_func.R') #loads NCD functions NCD1 and NCD2
+
+setDT(inputfile)
+listtables <- list(inputfile, inputfile)
+SNP_input <- inputfile
+system.time(example.run.ncd1<-foreach(x=1, .combine="rbind", .packages=c("data.table")) %dopar% NCD1(X=SNP_input, W=1000, S=1000))
+
+saveRDS(datatable, file = "example_input_files/NCD_input.rds")
+saveRDS(example.run.ncd1, file = "ZI_3kb_NCD_output.rds")
+saveRDS(example.run.ncd1, file = "ZI_1kb_NCD_output.rds")
+
+output <- data.frame()
+output <- readRDS(file = "NCD_output.rds")
+input <- readRDS(file = "NCD_input.rds")
+
+write.table(output, file = "NCD_output.txt", sep = "\t", col.names = TRUE)
+write.table(input, file = "NCD_input.txt", sep = "\t", col.names = TRUE)
+```
+
+## RAL Data Import (into R)
+
+```{r}
+memory.limit(24000)
+vcf <- read.table("3R_final_RALonly_r6_modified_dmel6_dsim2.vcf", stringsAsFactors = FALSE, header = TRUE)
+
+datatable <- data.frame(vcf$CHROM,  vcf$POS)
+colnames(datatable) <- c("CHROM", "POS")
+datatable$ID <- paste(datatable$CHROM, "|", datatable$POS, sep = "")
+datatable$REF <- vcf$REF
+datatable$ALT <- vcf$ALT
+datatable$AF1 <- vcf$X0_Count / (vcf$X0_Count + vcf$X1_Count)
+datatable$AF2 <- vcf$X1_Count / (vcf$X0_Count + vcf$X1_Count)
+datatable$AF3 <- NA
+datatable <- transform(datatable, MAF = pmin(AF1, AF2))
+colnames(datatable) <- c("CHR", "POS", "ID", "REF", "ALT", "AF1", "AF2", "AF3", "MAF")
+
+setwd("~/University/Year 4/BIOL0041/Data/NCD-statistics")
+inputfile <- datatable
+
+install.packages("doMC", repos="http://R-Forge.R-project.org")
+library(doMC)
+install.packages("foreach")
+library(foreach)
+setwd("C:/Users/miles/OneDrive - University College London/Documents/University/Year 4/BIOL0041/Data/NCD-statistics")
+source('scripts/preamble.R') #loads several packages
+install.packages("data.table")
+source('scripts/NCD_func.R') #loads NCD functions NCD1 and NCD2
+
+inputfile <- inputfile %>%
+  rename(CHR = CHROM) 
+
+setDT(inputfile)
+listtables <- list(inputfile, inputfile)
+SNP_input <- inputfile
+system.time(example.run.ncd1<-foreach(x=1, .combine="rbind", .packages=c("data.table")) %dopar% NCD1(X=SNP_input, W=1000, S=1000))
+
+saveRDS(example.run.ncd1, file = "RAL_3kb_NCD_output.rds")
+saveRDS(example.run.ncd1, file = "RAL_1kb_NCD_output.rds")
+
+output <- data.frame()
+output <- readRDS(file = "NCD_output.rds")
+input <- readRDS(file = "NCD_input.rds")
+
+write.table(output, file = "NCD_output.txt", sep = "\t", col.names = TRUE)
+write.table(input, file = "NCD_input.txt", sep = "\t", col.names = TRUE)
+```
+
+## ZI Imported Data Cleaning, Initial Visualisations and Summary Statistics
+
+**3kb Windows
+
+```{r}
+ZIoutput3kb <- readRDS(file = "ZI_3kb_NCD_output.rds")
+install.packages("stringr")
+library(stringr)
+install.packages("stringi")
+library(stringi)
+
+Loc <- stri_sub(ZIoutput3kb$Win.ID, 3, 10)
+Loc <- sub("\\|", "", Loc)
+Loc <- as.numeric(Loc)
+ZIoutput3kb$Loc <- Loc
+Loc <- ZIoutput3kb$Loc
+Loc <- Loc + 1500
+ZIoutput3kb$Loc <- Loc
+class(ZIoutput3kb$Loc) <- "Numeric"
+
+saveRDS(ZIoutput3kb, file = "ZI_3kb_NCD_output.rds")
+ZIoutput3kb <- readRDS(file = "ZI_3kb_NCD_output.rds")
+
+ZIoutput3kbfilter <- ZIoutput3kb[which(ZIoutput3kb$N_SNPs_cor >= 10),] #filters from 9224 to 9013 windows
+
+install.packages("ggplot2")
+library(ggplot2)
+
+ggplot(ZIoutput3kbfilter, aes(x=NCD1_tf0.5)) + geom_histogram()
+nrow(ZIoutput3kbfilter[which(ZIoutput3kbfilter$NCD1_tf0.5 < 0.4),]) # 19 windows below 0.4. 19/9013 = 0.21%
+
+ZIoutput3kborder <- ZIoutput3kbfilter[order(ZIoutput3kbfilter$NCD1_tf0.5),]
+ZIoutput3kborder[90,] # 1% lower tail threshold is 0.4212144
+ggplot(ZIoutput3kbfilter, aes(x=NCD1_tf0.5)) + geom_histogram() + geom_vline(xintercept = 0.4212144, color = "red", size = 1)
+
+ggplot(ZIoutput3kbfilter, aes(x=Loc, y=NCD1_tf0.5, colour = NCD1_tf0.5 < 0.42121441)) + geom_point() + ylim(0.5, 0.2) + scale_colour_manual(name = "Within Lower 1% Tail", values = setNames(c("red", "black"), c(T, F)))
+
+ZIoutput3kborder <- ZIoutput3kbfilter[order(ZIoutput3kbfilter$N_SNPs_cor),]
+ZIoutput3kborder[90,] # 1% lower tail threshold is 31 SNPs per window
+ggplot(ZIoutput3kbfilter, aes(x=Loc, y=N_SNPs_cor, colour = NCD1_tf0.5 < 0.42121441)) + geom_point() + scale_colour_manual(name = "Within Lower 1% Tail", values = setNames(c("red", "black"), c(T, F)))
+
+ggplot(ZIoutput3kbfilter, aes(x=N_SNPs_cor, y=NCD1_tf0.5)) + geom_point()
+
+mean(ZIoutput3kbfilter$N_SNPs_cor) # 226.9533
+median(ZIoutput3kbfilter$N_SNPs_cor) # 245
+```
+
+**1kb Windows
+
+```{r}
+ZIoutput1kb <- readRDS(file = "ZI_1kb_NCD_output.rds")
+install.packages("stringr")
+library(stringr)
+install.packages("stringi")
+library(stringi)
+
+Loc <- stri_sub(ZIoutput1kb$Win.ID, 3, 10)
+Loc <- sub("\\|", "", Loc)
+Loc <- as.numeric(Loc)
+ZIoutput1kb$Loc <- Loc
+Loc <- ZIoutput1kb$Loc
+Loc <- Loc + 500
+ZIoutput1kb$Loc <- Loc
+class(ZIoutput1kb$Loc) <- "Numeric"
+
+saveRDS(ZIoutput1kb, file = "ZI_1kb_NCD_output.rds")
+ZIoutput1kb <- readRDS(file = "ZI_1kb_NCD_output.rds")
+
+ZIoutput1kbfilter <- ZIoutput1kb[which(ZIoutput1kb$N_SNPs_cor >= 10),] #filters from 27423 to 26879 total windows
+
+install.packages("ggplot2")
+library(ggplot2)
+
+ggplot(ZIoutput1kbfilter, aes(x=NCD1_tf0.5)) + geom_histogram()
+nrow(ZIoutput1kbfilter[which(ZIoutput1kbfilter$NCD1_tf0.5 < 0.4),]) #123 windows below 0.4, 123/26879 = 0.46%
+
+ZIoutput1kborder <- ZIoutput1kbfilter[order(ZIoutput1kbfilter$NCD1_tf0.5),]
+ZIoutput1kborder[268,] # 1% lower tail threshold is 0.4094252
+ggplot(ZIoutput1kbfilter, aes(x=NCD1_tf0.5)) + geom_histogram() + geom_vline(xintercept = 0.4094252, color = "red", size = 1)
+
+ggplot(ZIoutput1kbfilter, aes(x=Loc, y=NCD1_tf0.5, colour = NCD1_tf0.5 < 0.4094252)) + geom_point() + ylim(0.5, 0.2) + scale_colour_manual(name = "Within Lower 1% Tail", values = setNames(c("red", "black"), c(T, F)))
+
+ZIoutput1kborder <- ZIoutput1kbfilter[order(ZIoutput1kbfilter$N_SNPs_cor),]
+ZIoutput1kborder[269,] # 1% lower tail threshold is 13 SNPs per window
+ggplot(ZIoutput1kbfilter, aes(x=Loc, y=N_SNPs_cor, colour = NCD1_tf0.5 < 0.4094252)) + geom_point() + scale_colour_manual(name = "Within Lower 1% Tail", values = setNames(c("red", "black"), c(T, F)))
+
+ggplot(ZIoutput1kbfilter, aes(x=N_SNPs_cor, y=NCD1_tf0.5)) + geom_point()
+
+mean(ZIoutput1kbfilter$N_SNPs_cor) # 76.9138
+median(ZIoutput1kbfilter$N_SNPs_cor) # 80
+```
+
+## RAL Imported Data Cleaning, Initial Visualisations and Summary Statistics
+
+**3kb Windows
+
+```{r}
+RALoutput3kb <- readRDS(file = "RAL_3kb_NCD_output.rds")
+install.packages("stringr")
+library(stringr)
+install.packages("stringi")
+library(stringi)
+
+Loc <- stri_sub(RALoutput3kb$Win.ID, 3, 10)
+Loc <- sub("\\|", "", Loc)
+Loc <- as.numeric(Loc)
+RALoutput3kb$Loc <- Loc
+Loc <- RALoutput3kb$Loc
+Loc <- Loc + 1500
+RALoutput3kb$Loc <- Loc
+class(RALoutput3kb$Loc) <- "Numeric"
+
+saveRDS(RALoutput3kb, file = "RAL_3kb_NCD_output.rds")
+RALoutput3kb <- readRDS(file = "RAL_3kb_NCD_output.rds")
+
+RALoutput3kbfilter <- RALoutput3kb[which(RALoutput3kb$N_SNPs_cor >= 10),] #filters from 9224 to 9013 windows
+
+install.packages("ggplot2")
+library(ggplot2)
+
+ggplot(RALoutput3kbfilter, aes(x=NCD1_tf0.5)) + geom_histogram()
+nrow(RALoutput3kbfilter[which(RALoutput3kbfilter$NCD1_tf0.5 < 0.4),]) # 1489 windows below 0.4. 1489/9013 = 16.51%
+
+RALoutput3kborder <- RALoutput3kbfilter[order(RALoutput3kbfilter$NCD1_tf0.5),]
+RALoutput3kborder[90,] # 1% lower tail threshold is 0.3630676
+ggplot(RALoutput3kbfilter, aes(x=NCD1_tf0.5)) + geom_histogram() + geom_vline(xintercept = 0.3630676, color = "red", size = 1)
+
+ggplot(RALoutput3kbfilter, aes(x=Loc, y=NCD1_tf0.5, colour = NCD1_tf0.5 < 0.3630676)) + geom_point() + ylim(0.5, 0.2) + scale_colour_manual(name = "Within Lower 1% Tail", values = setNames(c("red", "black"), c(T, F)))
+
+RALoutput3kborder <- RALoutput3kbfilter[order(RALoutput3kbfilter$N_SNPs_cor),]
+RALoutput3kborder[90,] # 1% lower tail threshold is 19 SNPs per window
+ggplot(RALoutput3kbfilter, aes(x=Loc, y=N_SNPs_cor, colour = NCD1_tf0.5 < 0.3630676)) + geom_point() + scale_colour_manual(name = "Within Lower 1% Tail", values = setNames(c("red", "black"), c(T, F)))
+
+ggplot(RALoutput3kbfilter, aes(x=N_SNPs_cor, y=NCD1_tf0.5)) + geom_point()
+
+mean(RALoutput3kbfilter$N_SNPs_cor) # 96.34719
+median(RALoutput3kbfilter$N_SNPs_cor) # 96
+```
+
+**1kb Windows
+
+```{r}
+RALoutput1kb <- readRDS(file = "RAL_1kb_NCD_output.rds")
+install.packages("stringr")
+library(stringr)
+install.packages("stringi")
+library(stringi)
+
+Loc <- stri_sub(RALoutput1kb$Win.ID, 3, 10)
+Loc <- sub("\\|", "", Loc)
+Loc <- as.numeric(Loc)
+RALoutput1kb$Loc <- Loc
+Loc <- RALoutput1kb$Loc
+Loc <- Loc + 500
+RALoutput1kb$Loc <- Loc
+class(RALoutput1kb$Loc) <- "Numeric"
+
+saveRDS(RALoutput1kb, file = "RAL_1kb_NCD_output.rds")
+RALoutput1kb <- readRDS(file = "RAL_1kb_NCD_output.rds")
+
+RALoutput1kbfilter <- RALoutput1kb[which(RALoutput1kb$N_SNPs_cor >= 10),] #filters from 27423 to 26046 total windows
+
+install.packages("ggplot2")
+library(ggplot2)
+
+ggplot(RALoutput1kbfilter, aes(x=NCD1_tf0.5)) + geom_histogram()
+nrow(RALoutput1kbfilter[which(RALoutput1kbfilter$NCD1_tf0.5 < 0.4),]) #6009 windows below 0.4, 6009/26879 = 22.36%
+
+RALoutput1kborder <- RALoutput1kbfilter[order(RALoutput1kbfilter$NCD1_tf0.5),]
+RALoutput1kborder[260,] # 1% lower tail threshold is 0.3415225
+ggplot(RALoutput1kbfilter, aes(x=NCD1_tf0.5)) + geom_histogram() + geom_vline(xintercept = 0.3415225, color = "red", size = 1)
+
+ggplot(RALoutput1kbfilter, aes(x=Loc, y=NCD1_tf0.5, colour = NCD1_tf0.5 < 0.3415225)) + geom_point() + ylim(0.5, 0.1) + scale_colour_manual(name = "Within Lower 1% Tail", values = setNames(c("red", "black"), c(T, F)))
+
+ggplot(RALoutput1kbfilter, aes(x=N_SNPs_cor, y=NCD1_tf0.5)) + geom_point()
+
+mean(RALoutput1kbfilter$N_SNPs_cor) # 33.30584
+median(RALoutput1kbfilter$N_SNPs_cor) # 32
+```
+
+## Determing Window Size
+
+```{r}
+mean3kb <- mean(ZIoutput3kbfilter$N_SNPs_cor) # 226.9533
+median3kb <- median(ZIoutput3kbfilter$N_SNPs_cor) # 245
+mean(ZIoutput3kbfilter$NCD1_tf0.5) # 0.4531077
+sd(ZIoutput3kbfilter$NCD1_tf0.5) # 0.01142022
+
+mean1kb <- mean(ZIoutput1kbfilter$N_SNPs_cor) # 76.9138
+median1kb <- median(ZIoutput1kbfilter$N_SNPs_cor) # 80
+mean(ZIoutput1kbfilter$NCD1_tf0.5) # 0.4533445
+sd(ZIoutput1kbfilter$NCD1_tf0.5) # 0.01528184
+
+(median1kb - mean1kb) / mean1kb
+(median3kb - mean3kb) / mean3kb
+```
+
+
+## Adjusting Files Filtered to >25 SNPs per Window
+
+** ZI
+
+```{r}
+ZIoutput1kbfilter25 <- ZIoutput1kb[which(ZIoutput1kb$N_SNPs_cor >= 25),] #filters from 27423 to 24700 total windows
+
+ZIoutput1kborder <- ZIoutput1kbfilter[order(ZIoutput1kbfilter$NCD1_tf0.5),]
+ZIoutput1kborder[247,] # 1% tail value is 0.4138105
+```
+
+** RAL
+
+```{r}
+RALoutput1kbfilter25 <- RALoutput1kb[which(RALoutput1kb$N_SNPs_cor >= 25),] #filters from 27423 to 18384 total windows
+
+RALoutput1kborder <- RALoutput1kbfilter[order(RALoutput1kbfilter$NCD1_tf0.5),]
+RALoutput1kborder[184,] # 1% tail value is 0.3431322
+```
+
+## Exploring Recombination Rate
+
+** 1kb windows prep and conversion from R6 to R5
+
+```{r}
+coords_1kb <- sort(RALoutput1kb$Loc)
+coords_1kb_start <- coords_1kb - 500
+coords_1kb_end <- coords_1kb + 500
+coords_1kb_final <- c()
+for (i in 1:length(coords_1kb)) {
+  coords_1kb_final[i] <- str_interp("3R:${coords_1kb_start[i]}..${coords_1kb_end[i]}")
+}
+df_coords_1kb <- as.data.frame(coords_1kb_final)
+
+write.csv(df_coords_1kb, "df_coords_1kb.csv")
+
+#Use FlyBase to convert R6 coordinates to R5 coordinates.
+
+df_coords_1kb <- read.csv("df_coords_1kb.csv", header = FALSE)
+
+df_coords_1kb$R6.Coordinates <- str_replace_all(df_coords_1kb$R6.Coordinates, ",", "")
+df_coords_1kb$R5.Coordinates <- str_replace_all(df_coords_1kb$R5.Coordinates, ",", "")
+
+write.csv(df_coords_1kb, "df_coords_1kb.csv")
+```
+
+** 1kb RRC results
+
+```{r}
+sortRALoutput1kb <- RALoutput1kb[order(RALoutput1kb$Loc),]
+sortZIoutput1kb <- ZIoutput1kb[order(ZIoutput1kb$Loc),]
+
+RRC_1kb <- read.delim("df_coords_1kb.rrc", header = FALSE)
+
+RRC_start <- c(); RRC_mid <- c(); RRC_end <- c()
+Com_start <- c(); Com_mid <- c(); Com_end <- c()
+
+for (i in 1:54844) {
+  if (i %% 2 == 0) {
+    RRC_start[i/2] <- RRC_1kb$V3[i]; RRC_mid[i/2] <- RRC_1kb$V4[i]; RRC_end[i/2] <- RRC_1kb$V5[i]
+    Com_start[i/2] <- RRC_1kb$V6[i]; Com_mid[i/2] <- RRC_1kb$V7[i]; Com_end[i/2] <- RRC_1kb$V8[i]
+  }
+  if (i %% 1000 == 0) {
+    print(i)
+  }
+}
+
+RRC_start[27423] <- RRC_1kb$V3[54845]; RRC_mid[27423] <- RRC_1kb$V4[54845]; RRC_end[27423] <- RRC_1kb$V5[54845]
+Com_start[27423] <- RRC_1kb$V6[54845]; Com_mid[27423] <- RRC_1kb$V7[54845]; Com_end[27423] <- RRC_1kb$V8[54845]
+
+RRC_start <- as.numeric(RRC_start); RRC_mid <- as.numeric(RRC_mid); RRC_end <- as.numeric(RRC_end)
+Com_start <- as.numeric(Com_start); Com_mid <- as.numeric(Com_mid); Com_end <- as.numeric(Com_end)
+
+RRC_1kb_edit <- data.frame(df_coords_1kb$V1, sortRALoutput1kb$Loc, RRC_start, RRC_mid, RRC_end, Com_start, Com_mid, Com_end)
+names(RRC_1kb_edit)[names(RRC_1kb_edit) == 'df_coords_1kb.V1'] <- 'R5_Window'
+names(RRC_1kb_edit)[names(RRC_1kb_edit) == 'sortRALoutput1kb.Loc'] <- 'R6_Window_Mid'
+
+RALoutput1kb <- cbind(sortRALoutput1kb, RRC_1kb_edit$R5_Window, RRC_1kb_edit$RRC_mid, RRC_1kb_edit$Com_mid)
+names(RALoutput1kb)[names(RALoutput1kb) == 'RRC_1kb_edit$R5_Window'] <- 'R5_Window'
+names(RALoutput1kb)[names(RALoutput1kb) == 'RRC_1kb_edit$RRC_mid'] <- 'RRC_mid'
+names(RALoutput1kb)[names(RALoutput1kb) == 'RRC_1kb_edit$Com_mid'] <- 'Com_mid'
+RALoutput1kb <- RALoutput1kb[order(RALoutput1kb$Win.ID),]
+saveRDS(RALoutput1kb, file = "RAL_1kb_NCD_output.rds")
+
+ZIoutput1kb <- cbind(sortZIoutput1kb, RRC_1kb_edit$R5_Window, RRC_1kb_edit$RRC_mid, RRC_1kb_edit$Com_mid)
+names(ZIoutput1kb)[names(ZIoutput1kb) == 'RRC_1kb_edit$R5_Window'] <- 'R5_Window'
+names(ZIoutput1kb)[names(ZIoutput1kb) == 'RRC_1kb_edit$RRC_mid'] <- 'RRC_mid'
+names(ZIoutput1kb)[names(ZIoutput1kb) == 'RRC_1kb_edit$Com_mid'] <- 'Com_mid'
+ZIoutput1kb <- ZIoutput1kb[order(ZIoutput1kb$Win.ID),]
+saveRDS(ZIoutput1kb, file = "ZI_1kb_NCD_output.rds")
+```
+
+* 3 main relationships that we want to understand: Recombination rate X Number of SNPs per window
+
+```{r}
+ZIoutput1kbfilter <- ZIoutput1kb[which(ZIoutput1kb$N_SNPs_cor >= 10),] #filters from 27423 to 26046 total windows
+
+ggplot(ZIoutput1kbfilter, aes(x=N_SNPs_cor, y=RRC_mid)) + geom_point() + geom_smooth(method=lm) + ylim(0, 3.5) + labs(x = "Number of SNPs", y = "RRC estimate")
+
+ggplot(ZIoutput1kbfilter, aes(x=Loc, y=N_SNPs_cor)) + geom_point() + labs(x = "Locus", y = "Number of SNPs")
+
+```
+
+** 3 main relationships that we want to understand: Recombination rate X NCD
+
+```{r}
+ggplot(ZIoutput1kbfilter, aes(x=RRC_mid, y=NCD1_tf0.5)) + geom_point() + geom_smooth(method=lm) + labs(x = "RRC estimate", y = "NCD1 - t.f 0.5")
+#ggplot(ZIoutput1kbfilter, aes(x=Com_mid, y=NCD1_tf0.5)) + geom_point()
+```
+
+```{r}
+p1 <- ggplot(ZIoutput1kbfilter, aes(x=N_SNPs_cor, y=RRC_mid)) + geom_point() + geom_smooth(method=lm) + ylim(0, 3.5) + labs(x = "Number of SNPs", y = "RRC estimate")
+p2 <- ggplot(ZIoutput1kbfilter, aes(x=RRC_mid, y=NCD1_tf0.5)) + geom_point() + geom_smooth(method=lm) + labs(x = "RRC estimate", y = "NCD1 - t.f 0.5")
+
+ggarrange(p1, p2, ncol = 2, nrow = 1, labels = c("A", "B"))
+```
+
+## Quality Control
+
+```{r}
+ZIplot1kb <- ggplot(ZIoutput1kbfilter, aes(x=N_SNPs_cor, y=NCD1_tf0.5, colour = NCD1_tf0.5 < 0.4094252 & N_SNPs_cor >= 25)) + geom_point() + scale_colour_manual(name = "Within Lower 1% Tail + >= 25 SNPs", values = setNames(c("red", "black"), c(T, F))) + theme(legend.position = "bottom")
+
+a1 <- ggplot(ZIoutput1kbfilter, aes(x=N_SNPs_cor, y=NCD1_tf0.5)) + geom_point() + xlim(0, 250) + ylim(0.2, 0.5)
+a2 <- ggplot(ZIoutput1kbfilter25, aes(x=N_SNPs_cor, y=NCD1_tf0.5)) + geom_point() + xlim(0, 250) + ylim(0.2, 0.5)
+ggarrange(a1, a2, ncol = 2, nrow = 1, labels = c("A", "B"))
+```
+
+## Scrambled data
+
+```{r}
+memory.limit(24000)
+vcf <- read.table("3R_final_ZIonly_r6_modified_dmel6_dsim2.vcf", stringsAsFactors = FALSE, header = TRUE)
+
+datatable <- data.frame(vcf$CHROM, vcf$POS)
+colnames(datatable) <- c("CHROM", "POS")
+datatable$ID <- paste(datatable$CHROM, "|", datatable$POS, sep = "")
+datatable$REF <- vcf$REF
+datatable$ALT <- vcf$ALT
+datatable$AF1 <- vcf$X0_Count / (vcf$X0_Count + vcf$X1_Count)
+datatable$AF2 <- vcf$X1_Count / (vcf$X0_Count + vcf$X1_Count)
+datatable$AF3 <- NA
+datatable <- transform(datatable, MAF = pmin(AF1, AF2))
+colnames(datatable) <- c("CHR", "POS", "ID", "REF", "ALT", "AF1", "AF2", "AF3", "MAF")
+
+scrambled_input <- datatable
+
+set.seed(0)
+index <- c(seq(1, nrow(scrambled_input), 1))
+index_scr <- sample(index)
+
+scrambled_input <- cbind(scrambled_input, index_scr)
+
+temp <- data.frame(scrambled_input$AF1, scrambled_input$AF2, scrambled_input$AF3, scrambled_input$MAF, scrambled_input$index_scr)
+colnames(temp) <- c("AF1", "AF2", "AF3", "MAF", "index_scr")
+temp <- temp[order(temp$index_scr),]
+
+scrambled_input$AF1 <- temp$AF1
+scrambled_input$AF2 <- temp$AF2
+scrambled_input$AF3 <- temp$AF3
+scrambled_input$MAF <- temp$MAF
+
+keeps <- c("CHR", "POS", "ID", "REF", "ALT", "AF1", "AF2", "AF3", "MAF")
+scrambled_input <- scrambled_input[keeps]
+```
+
+```{r}
+setwd("~/University/Year 4/BIOL0041/Data/NCD-statistics")
+inputfile <- scrambled_input
+
+install.packages("doMC", repos="http://R-Forge.R-project.org")
+library(doMC)
+install.packages("foreach")
+library(foreach)
+setwd("C:/Users/miles/OneDrive - University College London/Documents/University/Year 4/BIOL0041/Data/NCD-statistics")
+source('scripts/preamble.R') #loads several packages
+install.packages("data.table")
+library(data.table)
+source('scripts/NCD_func.R') #loads NCD functions NCD1 and NCD2
+
+setDT(inputfile)
+listtables <- list(inputfile, inputfile)
+SNP_input <- inputfile
+system.time(example.run.ncd1<-foreach(x=1, .combine="rbind", .packages=c("data.table")) %dopar% NCD1(X=SNP_input, W=1000, S=1000))
+
+scrambledoutput1kb <- example.run.ncd1
+```
+
+```{r}
+install.packages("stringr")
+library(stringr)
+install.packages("stringi")
+library(stringi)
+
+Loc <- stri_sub(scrambledoutput1kb$Win.ID, 3, 10)
+Loc <- sub("\\|", "", Loc)
+Loc <- as.numeric(Loc)
+scrambledoutput1kb$Loc <- Loc
+Loc <- scrambledoutput1kb$Loc
+Loc <- Loc + 500
+scrambledoutput1kb$Loc <- Loc
+class(scrambledoutput1kb$Loc) <- "Numeric"
+
+scrambledoutput1kbfilter <- scrambledoutput1kb[which(scrambledoutput1kb$N_SNPs_cor >= 25),] #filters from 27423 to 26852 total windows
+
+plotA <- ggplot(ZIoutput1kbfilter, aes(x=Loc, y=NCD1_tf0.5)) + geom_point() + geom_smooth(method=lm) + ylim(0.2, 0.5) + labs(x = "Locus", y = "NCD1 - t.f 0.5")
+plotB <- ggplot(scrambledoutput1kbfilter, aes(x=Loc, y=NCD1_tf0.5)) + geom_point() + geom_smooth(method=lm) + ylim(0.2, 0.5) + labs(x = "Locus", y = "")
+ggarrange(plotA, plotB, nrow = 1, ncol = 2, labels = c("A", "B"))
+
+plotC <- ggplot(ZIoutput1kbfilter, aes(x=N_SNPs_cor, y=NCD1_tf0.5, colour = NCD1_tf0.5 < 0.4094252 & N_SNPs_cor >= 25)) + geom_point() + ylim(0.2, 0.5) + scale_colour_manual(name = "Within Lower 1% Tail & >= 25 SNPs", values = setNames(c("red", "black"), c(T, F))) + theme(legend.position = "bottom") + labs(x = "Number of SNPs", y = "NCD1 - t.f 0.5")
+plotD <- ggplot(scrambledoutput1kbfilter, aes(x=N_SNPs_cor, y=NCD1_tf0.5, colour = NCD1_tf0.5 < 0.4094252 & N_SNPs_cor >= 25)) + geom_point() + ylim(0.2, 0.5) + scale_colour_manual(name = "Within Lower 1% Tail & >= 25 SNPs", values = setNames(c("red", "black"), c(T, F))) + theme(legend.position = "bottom") + labs(x = "Number of SNPs", y = "")
+ggarrange(plotC, plotD, nrow = 1, ncol = 2, labels = c("A", "B"))
+```
+
+## Regression
+
+```{r}
+reg_1 <- lm(NCD1_tf0.5 ~ N_SNPs_cor, data = ZIoutput1kbfilter25)
+summary(reg_1)
+
+Residuals <- abs(reg_1$residuals)
+
+ZIoutput1kbfilter25 <- cbind(ZIoutput1kbfilter25, Residuals)
+
+reg_2 <- lm(Residuals ~ N_SNPs_cor, data = ZIoutput1kbfilter25)
+summary(reg_2)
+
+ggplot(ZIoutput1kbfilter25, aes(x = N_SNPs_cor, y = Residuals)) + geom_point() + labs(x = "Number of SNPs", y = "Residuals")
+```
+
+## ZI x RAL Compare
+
+** Scatter of N_SNPs_cor x NCD1_tf0.5
+
+```{r}
+ZIplot1kb <- ggplot(ZIoutput1kbfilter25, aes(x=N_SNPs_cor, y=NCD1_tf0.5, colour = NCD1_tf0.5 < 0.4138105 & N_SNPs_cor >= 25)) + geom_point() + scale_colour_manual(name = "Within Lower 1% Tail", values = setNames(c("red", "black"), c(T, F))) + theme(legend.position = "bottom") + labs(x = "Number of SNPs", y = "NCD1 - t.f 0.5") + ylim(0.2, 0.5)
+RALplot1kb <- ggplot(RALoutput1kbfilter25, aes(x=N_SNPs_cor, y=NCD1_tf0.5, colour = NCD1_tf0.5 < 0.3431322 & N_SNPs_cor >= 25)) + geom_point() + scale_colour_manual(name = "Within Lower 1% Tail", values = setNames(c("red", "black"), c(T, F))) + theme(legend.position = "bottom") + labs(x = "Number of SNPs", y = "NCD1 - t.f 0.5") + ylim(0.2, 0.5)
+
+ggarrange(ZIplot1kb, RALplot1kb, nrow = 1, ncol = 2, labels = c("A", "B"))
+```
+
+** Scatter of Loc x NCD1_tf0.5 
+
+```{r}
+install.packages("ggpubr")
+library(ggpubr)
+
+ZIplot1kb <- ggplot(ZIoutput1kbfilter25, aes(x=Loc, y=NCD1_tf0.5, colour = NCD1_tf0.5 < 0.4138105)) + geom_point() + ylim(0.5, 0.2) + scale_colour_manual(name = "Within Lower 1% Tail", values = setNames(c("red", "black"), c(T, F))) + labs(x = "Locus", y = "NCD1 - t.f 0.5")
+
+RALplot1kb <- ggplot(RALoutput1kbfilter25, aes(x=Loc, y=NCD1_tf0.5, colour = NCD1_tf0.5 < 0.3431322)) + geom_point() + ylim(0.5, 0.2) + scale_colour_manual(name = "Within Lower 1% Tail", values = setNames(c("red", "black"), c(T, F))) + labs(x = "Locus", y = "NCD1 - t.f 0.5")
+
+ggarrange(ZIplot1kb, RALplot1kb, ncol = 1, nrow = 2, labels = c("A", "B"))
+```
+
+** Summary Statistics
+
+```{r}
+mean(ZIoutput1kbfilter25$N_SNPs_cor) # 82.08036
+median(ZIoutput1kbfilter25$N_SNPs_cor) # 84
+mean(ZIoutput1kbfilter25$NCD1_tf0.5) # 0.4536548
+sd(ZIoutput1kbfilter25$NCD1_tf0.5) # 0.01413341
+
+mean(RALoutput1kbfilter25$N_SNPs_cor) # 39.59481
+median(RALoutput1kbfilter25$N_SNPs_cor) # 37
+mean(RALoutput1kbfilter25$NCD1_tf0.5) # 0.4171712
+sd(RALoutput1kbfilter25$NCD1_tf0.5) # 0.02831252
+```
+
+## Review of Significant Windows
+
+** Importing Data
+
+```{r}
+Gene_Map <- read.csv("DmelMapTable.csv", header = TRUE)
+nrow(Gene_Map) #4175
+Gene_Map <- Gene_Map[20:4175,]
+nrow(Gene_Map) #4156
+```
+
+** Function
+
+```{r}
+Get_Genes <- function(Windows) {
+  Genes <- c()
+  for (i in 1:length(Windows)) {
+    temp <- c()
+    for (j in 1:nrow(Gene_Map)) {
+      if (Windows[i] >= Gene_Map$Start[j] & Windows[i] <= Gene_Map$Stop[j]) {
+        temp <- c(temp, Gene_Map$Gene.Symbol[j])
+      }
+    }
+    string <- ""
+    for (k in 1:length(temp)) {
+      if (k == 1) {
+        string <- str_interp("${temp[k]}")
+      } else {
+        string <- str_interp("${string}, ${temp[k]}")
+      }
+    }
+    if (length(temp) == 0) {
+      string <- "No Genes"
+    }
+    Genes[i] <- string
+  }
+  frame <- data.frame(Windows, Genes)
+  return(frame)
+}
+
+Get_Genes(c(27918200, 27961450))
+
+tempZI <- ZIoutput1kbfilter25[order(ZIoutput1kbfilter25$NCD1_tf0.5),]
+tempZILocs <- tempZI$Loc[1:20]
+
+tempRAL <- RALoutput1kbfilter25[order(RALoutput1kbfilter25$NCD1_tf0.5),]
+tempRALLocs <- tempRAL$Loc[1:20]
+```
+
+# ZI x RAL Compare Table
+
+```{r}
+ZI_RAL_output1kb <- RALoutput1kb
+names(ZI_RAL_output1kb)[names(ZI_RAL_output1kb) == 'N_Raw'] <- 'RAL_N_Raw'
+names(ZI_RAL_output1kb)[names(ZI_RAL_output1kb) == 'N_SNPs_cor'] <- 'RAL_N_SNPs_cor'
+names(ZI_RAL_output1kb)[names(ZI_RAL_output1kb) == 'NCD1_tf0.5'] <- 'RAL_NCD1_tf0.5'
+names(ZI_RAL_output1kb)[names(ZI_RAL_output1kb) == 'NCD1_tf0.4'] <- 'RAL_NCD1_tf0.4'
+names(ZI_RAL_output1kb)[names(ZI_RAL_output1kb) == 'NCD1_tf0.3'] <- 'RAL_NCD1_tf0.3'
+
+ZI_RAL_output1kb <- cbind(ZI_RAL_output1kb, ZIoutput1kb$N_Raw, ZIoutput1kb$N_SNPs_cor, ZIoutput1kb$NCD1_tf0.5, ZIoutput1kb$NCD1_tf0.4, ZIoutput1kb$NCD1_tf0.3)
+names(ZI_RAL_output1kb)[names(ZI_RAL_output1kb) == 'ZIoutput1kb$N_Raw'] <- 'ZI_N_Raw'
+names(ZI_RAL_output1kb)[names(ZI_RAL_output1kb) == 'ZIoutput1kb$N_SNPs_cor'] <- 'ZI_N_SNPs_cor'
+names(ZI_RAL_output1kb)[names(ZI_RAL_output1kb) == 'ZIoutput1kb$NCD1_tf0.5'] <- 'ZI_NCD1_tf0.5'
+names(ZI_RAL_output1kb)[names(ZI_RAL_output1kb) == 'ZIoutput1kb$NCD1_tf0.4'] <- 'ZI_NCD1_tf0.4'
+names(ZI_RAL_output1kb)[names(ZI_RAL_output1kb) == 'ZIoutput1kb$NCD1_tf0.3'] <- 'ZI_NCD1_tf0.3'
+
+saveRDS(ZI_RAL_output1kb, file = "ZI_RAL_1kb_NCD_output.rds")
+ZI_RAL_output1kb <- readRDS(file = "ZI_RAL_1kb_NCD_output.rds")
+
+ZI_RAL_output1kbfilter <- ZI_RAL_output1kb[which(ZI_RAL_output1kb$ZI_N_SNPs_cor >= 25),]
+ZI_RAL_output1kbfilter <- ZI_RAL_output1kbfilter[which(ZI_RAL_output1kbfilter$RAL_N_SNPs_cor >= 25),]
+```
+
+# ZI x RAL Compare Results
+
+```{r}
+library(ggrepel)
+ggplot(ZI_RAL_output1kbfilter, aes(x = RAL_NCD1_tf0.5, y = ZI_NCD1_tf0.5, label = Loc)) + geom_point(aes(color = Loc)) + geom_vline(xintercept = 0.3431322, color = "red", size = 0.5) + geom_hline(yintercept = 0.4138105, color = "red", size = 0.5) + scale_color_gradientn(colors = c("#00AFBB", "#E7B800", "#FC4E07")) + geom_label_repel(data = subset(ZI_RAL_output1kbfilter, RAL_NCD1_tf0.5 <= 0.3431322 & ZI_NCD1_tf0.5 <= 0.4138105), size = 3, max.overlaps = 50) + labs(x = "RAL: NCD1 - t.f 0.5", y = "ZI: NCD1 - t.f 0.5")
+
+
+#, box.padding = 1.5, point.padding = 0.5, force = 100, segment.size = 0.2, segment.color = "grey50", direction = "y", max.overlaps = 20)
+
+sig_ZI_RAL_output1kbfilter <- ZI_RAL_output1kbfilter[which(ZI_RAL_output1kbfilter$RAL_NCD1_tf0.5 <= 0.3431322),]
+sig_ZI_RAL_output1kbfilter <- sig_ZI_RAL_output1kbfilter[which(sig_ZI_RAL_output1kbfilter$ZI_NCD1_tf0.5 <= 0.4138105),]
+print(sig_ZI_RAL_output1kbfilter$Loc)
+sig_to_both <- c()
+for (i in 1:length(sig_ZI_RAL_output1kbfilter$Loc)) {
+  sig_to_both[i] <- sig_ZI_RAL_output1kbfilter$Loc[i]
+}
+
+Get_Genes(tempZILocs)
+Get_Genes(tempRALLocs)
+Get_Genes(sig_to_both)
+```
+
+** Gene Summary File (ZI)
+
+```{r}
+NCD1_Mean <- c()
+NCD1_SD <- c()
+N_Windows <- c()
+N_SNPs_Mean <- c()
+N_SNPs_Var <- c()
+RRC_Mean <- c()
+Com_Mean <- c()
+
+for (i in 1:nrow(Gene_Map)) {
+  output <- ZIoutput1kbfilter25[which(ZIoutput1kbfilter25$Loc > Gene_Map$Start[i] & ZIoutput1kbfilter25$Loc < Gene_Map$Stop[i]),]
+  NCD1_Mean[i] <- mean(output$NCD1_tf0.5)
+  NCD1_SD[i] <- sd(output$NCD1_tf0.5)
+  N_Windows[i] <- nrow(output)
+  N_SNPs_Mean[i] <- mean(output$N_SNPs_cor)
+  N_SNPs_Var[i] <- sd(output$N_SNPs_cor)
+  RRC_Mean[i] <- mean(output$RRC_mid)
+  Com_Mean[i] <- mean(output$Com_mid)
+}
+
+ZI_Gene_Map_Sum <- cbind(Gene_Map, NCD1_Mean, NCD1_SD, N_Windows, N_SNPs_Mean, N_SNPs_Var, RRC_Mean, Com_Mean)
+```
+
+** Gene Summary File (RAL)
+
+```{r}
+NCD1_Mean <- c()
+NCD1_SD <- c()
+N_Windows <- c()
+N_SNPs_Mean <- c()
+N_SNPs_Var <- c()
+RRC_Mean <- c()
+Com_Mean <- c()
+
+for (i in 1:nrow(Gene_Map)) {
+  output <- RALoutput1kbfilter25[which(RALoutput1kbfilter25$Loc > Gene_Map$Start[i] & RALoutput1kbfilter25$Loc < Gene_Map$Stop[i]),]
+  NCD1_Mean[i] <- mean(output$NCD1_tf0.5)
+  NCD1_SD[i] <- sd(output$NCD1_tf0.5)
+  N_Windows[i] <- nrow(output)
+  N_SNPs_Mean[i] <- mean(output$N_SNPs_cor)
+  N_SNPs_Var[i] <- sd(output$N_SNPs_cor)
+  RRC_Mean[i] <- mean(output$RRC_mid)
+  Com_Mean[i] <- mean(output$Com_mid)
+}
+
+RAL_Gene_Map_Sum <- cbind(Gene_Map, NCD1_Mean, NCD1_SD, N_Windows, N_SNPs_Mean, N_SNPs_Var, RRC_Mean, Com_Mean)
+```
+
+** Gene Summary Filter & Top 1% Proportions
+
+```{r}
+ZI_Gene_Map_Sum_filter <- ZI_Gene_Map_Sum[which(ZI_Gene_Map_Sum$N_Windows >= 3),]
+RAL_Gene_Map_Sum_filter <- RAL_Gene_Map_Sum[which(RAL_Gene_Map_Sum$N_Windows >= 3),]
+
+ZI_Gene_Map_Sum_filter <- ZI_Gene_Map_Sum_filter[order(ZI_Gene_Map_Sum_filter$NCD1_Mean),]
+RAL_Gene_Map_Sum_filter <- RAL_Gene_Map_Sum_filter[order(RAL_Gene_Map_Sum_filter$NCD1_Mean),]
+
+ZI_Gene_Map_Sum_filter[1:13,]
+RAL_Gene_Map_Sum_filter[1:9,]
+
+nrow(ZIoutput1kbfilter25[which(ZIoutput1kbfilter25$NCD1_tf0.5 <= 0.4090148),])/nrow(ZIoutput1kbfilter25)
+nrow(RALoutput1kbfilter25[which(RALoutput1kbfilter25$NCD1_tf0.5 <= 0.3387106),])/nrow(RALoutput1kbfilter25)
+```
+
