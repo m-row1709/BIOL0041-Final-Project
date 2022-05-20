@@ -1,4 +1,4 @@
-I am unable to upload neither the VCF files or the intermediary .rds files that contain the initial data, as they exceed the GitHub repository limit of 25Mb.
+I am unable to upload neither the VCF files nor the intermediary .rds files that contain the initial data, as they exceed the GitHub repository limit of 25Mb.
 
 Instead, I have provided my supervisor (Max Reuter) with the files.
 
